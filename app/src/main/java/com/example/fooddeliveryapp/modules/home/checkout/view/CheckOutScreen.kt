@@ -24,10 +24,18 @@ import com.example.fooddeliveryapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckOutScreen(
-    onBackClick: () -> Unit, onBackToMenuClick: () -> Unit,totalAmount: String = "0",onConfirmClick: () -> Unit,
+    onBackClick: () -> Unit,
+    onBackToMenuClick: () -> Unit,
+    totalAmount: String,
+    onConfirmClick: () -> Unit
 ) {
     // State for selecting Payment Method
     var isCardSelected by remember { mutableStateOf(true) }
+
+    // Safely parse totalAmount to double/int for calculation, default to 0.0 if empty or invalid
+    val itemsTotal = totalAmount.toDoubleOrNull() ?: 0.0
+    val deliveryCharges = 200.0
+    val netTotal = itemsTotal + deliveryCharges
 
     Scaffold(
         containerColor = Color(0xFFE5D9C3) // Exact Figma Background Color
@@ -231,7 +239,12 @@ fun CheckOutScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Items total", fontSize = 14.sp, color = Color.Black)
-                Text(text = "Rs 2,660", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(
+                    text = "Rs ${String.format("%.0f", itemsTotal)}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -242,7 +255,12 @@ fun CheckOutScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Delivery charges", fontSize = 14.sp, color = Color.Black)
-                Text(text = "Rs 200", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(
+                    text = "Rs ${String.format("%.0f", deliveryCharges)}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -254,7 +272,12 @@ fun CheckOutScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(text = "Total:", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = "Rs 2,860", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(
+                    text = "Rs ${String.format("%.0f", netTotal)}",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
             }
 
             Spacer(modifier = Modifier.height(36.dp))

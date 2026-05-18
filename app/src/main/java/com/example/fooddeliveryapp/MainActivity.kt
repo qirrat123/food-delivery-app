@@ -15,12 +15,16 @@ import com.example.fooddeliveryapp.ui.theme.FoodDeliveryAppTheme
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.example.fooddeliveryapp.modules.authentication.forget.view.ForgetPasswordScreen
 import com.example.fooddeliveryapp.modules.authentication.reset.view.ResetPasswordScreen
 import com.example.fooddeliveryapp.modules.home.menu.view.MenuScreen
 import com.example.fooddeliveryapp.modules.home.product_detail.view.ProductDetailScreen
 import com.example.fooddeliveryapp.modules.home.cart.view.CartScreen
 import com.example.fooddeliveryapp.modules.home.checkout.view.CheckOutScreen
+// OrderTrackingScreen ka import yahan add kar diya hai
+import com.example.fooddeliveryapp.modules.home.ordertracking.view.OrderTrackingScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,38 +122,57 @@ fun AppNavigation() {
             )
         }
 
-        // 1. Cart Screen ka updated route (onCheckoutClick ke sath)
+        // Cart Screen Route
         composable(route = "cart") {
             CartScreen(
                 onBackToMenuClick = { navController.navigate("menu") },
                 onCancelOrderClick = { navController.navigate("product_detail") },
                 onCheckoutClick = { totalAmount ->
-                    // Checkout screen par navigate karein aur sath total amount bhi bhej dein
+                    // Checkout screen par navigate karte waqt string type specify kiya hai
                     navController.navigate("checkout/$totalAmount")
                 }
             )
         }
 
-        // 2. Checkout Screen ka Route
-        composable(route = "checkout/{totalAmount}") { backStackEntry ->
+        // Checkout Screen Route (Updated: onConfirmClick now links to order_tracking)
+        composable(
+            route = "checkout/{totalAmount}",
+            arguments = listOf(
+                navArgument("totalAmount") {
+                    type = NavType.StringType
+                    defaultValue = "0"
+                }
+            )
+        ) { backStackEntry ->
             val totalAmount = backStackEntry.arguments?.getString("totalAmount") ?: "0"
 
             CheckOutScreen(
                 totalAmount = totalAmount,
                 onBackClick = { navController.popBackStack() },
                 onConfirmClick = {
-                    // Jab user order confirm kare, to aap jahan bhejna chahein (e.g., Home ya Success screen)
-                    navController.navigate("menu") {
-                        popUpTo("menu") { inclusive = true } // Stack clear karne ke liye
+                    // Jab user confirm kare, checkout stack se remove ho jaye aur direct order_tracking par chala jaye
+                    navController.navigate("order_tracking") {
+                        popUpTo("menu") { inclusive = false }
                     }
                 },
                 onBackToMenuClick = {
-                    // Menu par wapas bhejne ke liye
                     navController.navigate("menu") {
                         popUpTo("welcome") { inclusive = false }
                     }
                 }
             )
         }
+
+        // Order Tracking Screen Route (New Route added for your Figma screen)
+        composable(route = "order_tracking") {
+            OrderTrackingScreen(
+                onBackClick = {
+                    // Back dabane par direct menu screen par clear stack ke sath le jaye
+                    navController.navigate("menu") {
+                        popUpTo("menu") { inclusive = true }
+                    }
+                }
+            )
         }
     }
+}
