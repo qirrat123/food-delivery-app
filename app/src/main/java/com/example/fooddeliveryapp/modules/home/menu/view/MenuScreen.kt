@@ -28,7 +28,7 @@ data class FoodItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MenuScreen() {
+fun MenuScreen(onItemClick: () -> Unit) {
     Scaffold(
         bottomBar = { CustomBottomBar() },
         containerColor = Color(0xFFF9F9F9) // Figma background color
@@ -62,22 +62,30 @@ fun MenuScreen() {
 
             // 6. Popular Section (Exactly like Figma)
             Text(
-                text = "Popluar", // Keeping Figma's spelling
+                text = "Popluar",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
+            // --- IS PURANI ROW KO DELETE KARKE NAYI WALI YE LIKHEIN ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Example Items
-                FoodCard(FoodItem("Beef Burger", "Rs 670", R.drawable.beef_burger)) // Replace with your image name
-                FoodCard(FoodItem("Cheesy Pizza", "Rs 1590", R.drawable.popular_pizza))
+                // Beef Burger Card
+                Box(modifier = Modifier.clickable { onItemClick() }) {
+                    FoodCard(FoodItem("Beef Burger", "Rs 670", R.drawable.beef_burger))
+                }
+
+                // Pizza Card
+                Box(modifier = Modifier.clickable { onItemClick() }) {
+                    FoodCard(FoodItem("Cheesy Pizza", "Rs 1590", R.drawable.popular_pizza))
+                }
             }
+            // -------------------------------------------------------
 
             // Extra spacing for bottom
             Spacer(modifier = Modifier.height(20.dp))
