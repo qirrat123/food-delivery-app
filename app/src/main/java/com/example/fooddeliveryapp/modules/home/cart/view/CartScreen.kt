@@ -34,7 +34,8 @@ data class CartItem(
 @Composable
 fun CartScreen(
     onBackToMenuClick: () -> Unit,
-    onCancelOrderClick: () -> Unit
+    onCancelOrderClick: () -> Unit,
+    onCheckoutClick: (totalAmount: Int) -> Unit
 ) {
     // 2. Initial Dynamic List state mein maintain ki
     var cartItemsList by remember {
@@ -173,7 +174,7 @@ fun CartScreen(
 
             // Action Buttons
             Button(
-                onClick = { },
+                onClick = {onCheckoutClick(currentTotal) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),

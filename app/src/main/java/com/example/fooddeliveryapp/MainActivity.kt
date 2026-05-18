@@ -20,21 +20,19 @@ import com.example.fooddeliveryapp.modules.authentication.reset.view.ResetPasswo
 import com.example.fooddeliveryapp.modules.home.menu.view.MenuScreen
 import com.example.fooddeliveryapp.modules.home.product_detail.view.ProductDetailScreen
 import com.example.fooddeliveryapp.modules.home.cart.view.CartScreen
+import com.example.fooddeliveryapp.modules.home.checkout.view.CheckOutScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Line 21 ko aise badlein:
         setContent {
             FoodDeliveryAppTheme {
                 AppNavigation()
             }
         }
-
     }
 }
-
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -51,12 +49,13 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = "welcome" // Ya jo bhi aapki pehli screen hai
+        startDestination = "welcome"
     ) {
         composable(route = "welcome") {
             WelcomeScreen(
@@ -69,12 +68,9 @@ fun AppNavigation() {
             LoginScreen(
                 onSignUpClick = { navController.navigate("signup") },
                 onForgetPasswordClick = { navController.navigate("forget") },
-                // Yeh line add karein:
                 onLoginSuccess = {
                     navController.navigate("menu") {
-                        popUpTo("welcome") {
-                            inclusive = true
-                        } // Login ke baad piche welcome par na jaye
+                        popUpTo("welcome") { inclusive = true }
                     }
                 }
             )
@@ -82,63 +78,78 @@ fun AppNavigation() {
 
         composable(route = "signup") {
             SignupScreen(
-                onLoginClick = {
-                    navController.navigate("login")
-                },
+                onLoginClick = { navController.navigate("login") },
                 onSignupSuccess = {
-                    // Account banne ke baad seedha Menu par bhejein
                     navController.navigate("menu") {
-                        // Taake back button dabane par wapas signup form na aaye
                         popUpTo("welcome") { inclusive = true }
                     }
                 }
             )
         }
 
-        // Line 79: Forget Password ka route yahan shuru hota hai
         composable(route = "forget") {
             ForgetPasswordScreen(
                 onContinueClick = { navController.navigate("reset_password") }
             )
-        } // <--- Yeh bracket line 81 par khatam ho raha hai
+        }
 
-        // YAHAN LIKHEIN (Line 82 par purana code delete karke ye naya likhein)
         composable(route = "reset_password") {
             ResetPasswordScreen(
                 onResetSuccess = {
                     navController.navigate("menu") {
-                        // Poore pichle stack ko clear kar dein taake user wapas reset page par na ja sakay
                         popUpTo("welcome") { inclusive = true }
                     }
                 }
             )
         }
+
         composable(route = "menu") {
             MenuScreen(
                 onItemClick = {
-                    navController.navigate("product_detail") // Menu se Detail page par jane ke liye
+                    navController.navigate("product_detail")
                 }
             )
         }
 
-        // 1. Product Detail Screen ka Route
         composable(route = "product_detail") {
             ProductDetailScreen(
-                onBackClick = { navController.popBackStack() }, // Wapas pichli screen par jaane ke liye
-                onAddToCartClick = { navController.navigate("cart") } // Cart screen par bhejne ke liye
+                onBackClick = { navController.popBackStack() },
+                onAddToCartClick = { navController.navigate("cart") }
             )
         }
 
-// 2. Cart Screen ka Route
+        // 1. Cart Screen ka updated route (onCheckoutClick ke sath)
         composable(route = "cart") {
             CartScreen(
                 onBackToMenuClick = { navController.navigate("menu") },
-                onCancelOrderClick = { navController.navigate("product_detail") } // Cancel par wapas Product Detail bheje
+                onCancelOrderClick = { navController.navigate("product_detail") },
+                onCheckoutClick = { totalAmount ->
+                    // Checkout screen par navigate karein aur sath total amount bhi bhej dein
+                    navController.navigate("checkout/$totalAmount")
+                }
             )
         }
+
+        // 2. Checkout Screen ka Route
+        composable(route = "checkout/{totalAmount}") { backStackEntry ->
+            val totalAmount = backStackEntry.arguments?.getString("totalAmount") ?: "0"
+
+            CheckOutScreen(
+                totalAmount = totalAmount,
+                onBackClick = { navController.popBackStack() },
+                onConfirmClick = {
+                    // Jab user order confirm kare, to aap jahan bhejna chahein (e.g., Home ya Success screen)
+                    navController.navigate("menu") {
+                        popUpTo("menu") { inclusive = true } // Stack clear karne ke liye
+                    }
+                },
+                onBackToMenuClick = {
+                    // Menu par wapas bhejne ke liye
+                    navController.navigate("menu") {
+                        popUpTo("welcome") { inclusive = false }
+                    }
                 }
-
+            )
         }
-
-
-
+        }
+    }
